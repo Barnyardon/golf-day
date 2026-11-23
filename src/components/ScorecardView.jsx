@@ -6,7 +6,6 @@ import {
   Grid,
   Users,
   X,
-  KeyRound,
 } from 'lucide-react';
 import { KIRTLINGTON_COURSE } from '../data/kirtlington.js';
 import {
@@ -25,66 +24,23 @@ export function ScorecardView({
 }) {
   const [hole, setHole] = useState(1);
   const [showFullCard, setShowFullCard] = useState(false);
-  const [codeInput, setCodeInput] = useState('');
-  const [codeError, setCodeError] = useState('');
 
   const activeTeam = teams.find((t) => t.id === activeTeamId) || null;
   const teamPlayers = activeTeam
     ? players.filter((p) => p.teamId === activeTeam.id)
     : [];
 
-  const handleJoinByCode = (e) => {
-    e.preventDefault();
-    const cleaned = codeInput.trim();
-    const found = teams.find((t) => t.joinCode === cleaned);
-    if (found) {
-      onSelectTeam(found.id);
-      setCodeError('');
-      setCodeInput('');
-    } else {
-      setCodeError('Code not found. Check your fourball code or pick a team below.');
-    }
-  };
-
   if (!activeTeam) {
     return (
-      <div className="space-y-4">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
-          <div className="flex items-center gap-2 text-emerald-900">
-            <KeyRound className="h-5 w-5" />
-            <h2 className="text-lg font-bold">Join your fourball</h2>
-          </div>
-          <p className="mt-1 text-sm text-stone-600">
-            Enter your 4-digit group code, or tap your team below to start scoring.
+      <div className="space-y-3">
+        <div className="px-1">
+          <h2 className="text-lg font-bold text-stone-900">Pick your team</h2>
+          <p className="mt-0.5 text-sm text-stone-600">
+            Tap your group to start scoring. Your phone will remember your team.
           </p>
-
-          <form onSubmit={handleJoinByCode} className="mt-4 flex gap-2">
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              value={codeInput}
-              onChange={(e) => {
-                setCodeInput(e.target.value);
-                setCodeError('');
-              }}
-              placeholder="e.g. 1001"
-              className="flex-1 rounded-xl border border-stone-300 px-3.5 py-2.5 text-base font-semibold tracking-widest focus:border-emerald-700 focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-xl bg-emerald-900 px-5 py-2.5 text-sm font-semibold text-white active:bg-emerald-950"
-            >
-              Join
-            </button>
-          </form>
-          {codeError && <p className="mt-2 text-xs font-medium text-rose-700">{codeError}</p>}
         </div>
 
         <div className="space-y-2.5">
-          <h3 className="px-1 text-xs font-semibold tracking-wider text-stone-500 uppercase">
-            Or pick a team
-          </h3>
           {teams.map((team) => {
             const members = players.filter((p) => p.teamId === team.id);
             const bb = calcTeamBetterBall(
@@ -102,12 +58,7 @@ export function ScorecardView({
                 className="flex w-full items-center justify-between rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-stone-200 active:bg-stone-50"
               >
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-stone-900">{team.name}</span>
-                    <span className="rounded-md bg-stone-100 px-1.5 py-0.5 text-xs font-mono text-stone-600">
-                      #{team.joinCode}
-                    </span>
-                  </div>
+                  <div className="font-bold text-stone-900">{team.name}</div>
                   <p className="mt-1 text-xs text-stone-600">
                     {members.map((m) => m.name).join(', ') || 'No players assigned'}
                   </p>

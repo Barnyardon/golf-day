@@ -5,10 +5,31 @@ import { ScorecardView } from './components/ScorecardView.jsx';
 import { LeaderboardView } from './components/LeaderboardView.jsx';
 import { OrganiserView } from './components/OrganiserView.jsx';
 
+const ACTIVE_TEAM_KEY = 'golf_day_active_team_v1';
+
 export default function App() {
   const store = useGolfDayStore();
   const [tab, setTab] = useState('scorecard');
-  const [activeTeamId, setActiveTeamId] = useState(null);
+  const [activeTeamId, setActiveTeamIdState] = useState(() => {
+    try {
+      return localStorage.getItem(ACTIVE_TEAM_KEY) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setActiveTeamId = (teamId) => {
+    setActiveTeamIdState(teamId);
+    try {
+      if (teamId) {
+        localStorage.setItem(ACTIVE_TEAM_KEY, teamId);
+      } else {
+        localStorage.removeItem(ACTIVE_TEAM_KEY);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   const statusPill = () => {
     if (store.syncStatus === 'local') {

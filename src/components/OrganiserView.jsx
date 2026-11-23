@@ -23,7 +23,6 @@ export function OrganiserView({
 
   // New team form
   const [newTeamName, setNewTeamName] = useState('');
-  const [newTeamCode, setNewTeamCode] = useState('');
 
   // New player form
   const [newPlayerName, setNewPlayerName] = useState('');
@@ -81,14 +80,12 @@ export function OrganiserView({
   const handleAddTeam = (e) => {
     e.preventDefault();
     if (!newTeamName.trim()) return;
-    const code = newTeamCode.trim() || String(1000 + teams.length + 1);
     onUpsertTeam({
       id: `team-${Date.now()}`,
       name: newTeamName.trim(),
-      joinCode: code,
+      joinCode: String(1000 + teams.length + 1),
     });
     setNewTeamName('');
-    setNewTeamCode('');
   };
 
   const handleAddPlayer = (e) => {
@@ -175,19 +172,14 @@ export function OrganiserView({
 
       {/* Teams */}
       <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-stone-200">
-        <h2 className="text-base font-bold text-stone-900">Teams & Join Codes</h2>
+        <h2 className="text-base font-bold text-stone-900">Teams</h2>
         <div className="mt-2 space-y-2">
           {teams.map((team) => (
             <div
               key={team.id}
               className="flex items-center justify-between rounded-xl bg-stone-50 px-3 py-2.5"
             >
-              <div>
-                <span className="text-sm font-bold text-stone-900">{team.name}</span>
-                <span className="ml-2 rounded bg-stone-200 px-1.5 py-0.5 text-xs font-mono text-stone-700">
-                  #{team.joinCode}
-                </span>
-              </div>
+              <span className="text-sm font-bold text-stone-900">{team.name}</span>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => onJumpToTeam(team.id)}
@@ -215,13 +207,6 @@ export function OrganiserView({
             value={newTeamName}
             onChange={(e) => setNewTeamName(e.target.value)}
             className="flex-1 rounded-xl border border-stone-300 px-3 py-2 text-sm"
-          />
-          <input
-            type="text"
-            placeholder="Code"
-            value={newTeamCode}
-            onChange={(e) => setNewTeamCode(e.target.value)}
-            className="w-20 rounded-xl border border-stone-300 px-2.5 py-2 text-sm font-mono"
           />
           <button
             type="submit"
