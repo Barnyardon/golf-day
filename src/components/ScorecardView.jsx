@@ -272,6 +272,11 @@ export function ScorecardView({
                         Gerald
                       </span>
                     )}
+                    {player.inGeraldine && (
+                      <span className="rounded-full bg-fuchsia-100 px-2 py-0.5 text-[11px] font-bold text-fuchsia-800">
+                        Geraldine
+                      </span>
+                    )}
                     {isCounting && (
                       <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-900">
                         <Check className="h-3 w-3" /> Counts

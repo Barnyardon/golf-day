@@ -184,6 +184,7 @@ export function useGolfDayStore() {
                   handicapIndex: p.handicap_index,
                   courseHandicap: p.course_handicap,
                   inGerald: Boolean(p.in_gerald),
+                  inGeraldine: Boolean(p.in_geraldine),
                 }))
               : prev.players,
           scores: Array.isArray(scores) ? scoreMap : prev.scores,
@@ -370,7 +371,8 @@ export function useGolfDayStore() {
           handicap_mode: player.handicapMode,
           handicap_index: player.handicapIndex,
           course_handicap: player.courseHandicap,
-          in_gerald: player.inGerald,
+          in_gerald: Boolean(player.inGerald),
+          in_geraldine: Boolean(player.inGeraldine),
         });
       }
     },

@@ -119,16 +119,16 @@ export const DEFAULT_TEAMS = [
 ];
 
 export const DEFAULT_PLAYERS = [
-  { id: 'p-1', teamId: 'team-1', name: 'Matt', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 19.8, courseHandicap: null, inGerald: true },
-  { id: 'p-2', teamId: 'team-1', name: 'Cath', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 32.8, courseHandicap: null, inGerald: false },
-  { id: 'p-3', teamId: 'team-1', name: 'Viv', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 54.0, courseHandicap: null, inGerald: false },
+  { id: 'p-1', teamId: 'team-1', name: 'Matt', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 19.8, courseHandicap: null, inGerald: true, inGeraldine: false },
+  { id: 'p-2', teamId: 'team-1', name: 'Cath', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 32.8, courseHandicap: null, inGerald: false, inGeraldine: true },
+  { id: 'p-3', teamId: 'team-1', name: 'Viv', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 54.0, courseHandicap: null, inGerald: false, inGeraldine: true },
 
-  { id: 'p-4', teamId: 'team-2', name: 'Sonya', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 54.0, courseHandicap: null, inGerald: false },
-  { id: 'p-5', teamId: 'team-2', name: 'Al', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.2, courseHandicap: null, inGerald: true },
-  { id: 'p-6', teamId: 'team-2', name: 'Vicki', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 54.0, courseHandicap: null, inGerald: false },
-  { id: 'p-7', teamId: 'team-2', name: 'Ian', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 28.8, courseHandicap: null, inGerald: true },
+  { id: 'p-4', teamId: 'team-2', name: 'Sonya', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 54.0, courseHandicap: null, inGerald: false, inGeraldine: true },
+  { id: 'p-5', teamId: 'team-2', name: 'Al', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.2, courseHandicap: null, inGerald: true, inGeraldine: false },
+  { id: 'p-6', teamId: 'team-2', name: 'Vicki', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 54.0, courseHandicap: null, inGerald: false, inGeraldine: true },
+  { id: 'p-7', teamId: 'team-2', name: 'Ian', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 28.8, courseHandicap: null, inGerald: true, inGeraldine: false },
 
-  { id: 'p-8', teamId: 'team-3', name: 'Adrian', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.0, courseHandicap: null, inGerald: false },
-  { id: 'p-9', teamId: 'team-3', name: 'Jo', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 37.2, courseHandicap: null, inGerald: false },
-  { id: 'p-10', teamId: 'team-3', name: 'Adam', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 25.2, courseHandicap: null, inGerald: true },
+  { id: 'p-8', teamId: 'team-3', name: 'Adrian', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.0, courseHandicap: null, inGerald: false, inGeraldine: false },
+  { id: 'p-9', teamId: 'team-3', name: 'Jo', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 37.2, courseHandicap: null, inGerald: false, inGeraldine: true },
+  { id: 'p-10', teamId: 'team-3', name: 'Adam', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 25.2, courseHandicap: null, inGerald: true, inGeraldine: false },
 ];

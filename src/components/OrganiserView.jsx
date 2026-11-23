@@ -31,7 +31,8 @@ export function OrganiserView({
   const [newPlayerTee, setNewPlayerTee] = useState('yellow');
   const [newPlayerHcpMode, setNewPlayerHcpMode] = useState('index');
   const [newPlayerHcpVal, setNewPlayerHcpVal] = useState('15.0');
-  const [newPlayerGerald, setNewPlayerGerald] = useState(true);
+  const [newPlayerGerald, setNewPlayerGerald] = useState(false);
+  const [newPlayerGeraldine, setNewPlayerGeraldine] = useState(false);
 
   const handleUnlock = (e) => {
     e.preventDefault();
@@ -102,6 +103,7 @@ export function OrganiserView({
       handicapIndex: newPlayerHcpMode === 'index' ? (Number.isFinite(numVal) ? numVal : 0) : null,
       courseHandicap: newPlayerHcpMode === 'course' ? (Number.isFinite(numVal) ? Math.round(numVal) : 0) : null,
       inGerald: newPlayerGerald,
+      inGeraldine: newPlayerGeraldine,
     });
     setNewPlayerName('');
   };
@@ -279,6 +281,16 @@ export function OrganiserView({
                     Gerald
                   </button>
                   <button
+                    onClick={() => onUpsertPlayer({ ...p, inGeraldine: !p.inGeraldine })}
+                    className={`rounded-lg px-2 py-1 text-[11px] font-bold ${
+                      p.inGeraldine
+                        ? 'bg-fuchsia-100 text-fuchsia-800'
+                        : 'bg-stone-200 text-stone-500'
+                    }`}
+                  >
+                    Geraldine
+                  </button>
+                  <button
                     onClick={() => onDeletePlayer(p.id)}
                     aria-label={`Delete ${p.name}`}
                     className="rounded-lg p-1 text-stone-400 hover:bg-rose-50 hover:text-rose-700"
@@ -351,16 +363,27 @@ export function OrganiserView({
               className="rounded-xl border border-stone-300 px-3 py-2 text-sm"
             />
           </div>
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 text-xs font-semibold text-stone-700">
-              <input
-                type="checkbox"
-                checked={newPlayerGerald}
-                onChange={(e) => setNewPlayerGerald(e.target.checked)}
-                className="h-4 w-4 rounded accent-indigo-700"
-              />
-              Include in Gerald competition
-            </label>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={newPlayerGerald}
+                  onChange={(e) => setNewPlayerGerald(e.target.checked)}
+                  className="h-4 w-4 rounded accent-indigo-700"
+                />
+                Gerald
+              </label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={newPlayerGeraldine}
+                  onChange={(e) => setNewPlayerGeraldine(e.target.checked)}
+                  className="h-4 w-4 rounded accent-fuchsia-700"
+                />
+                Geraldine
+              </label>
+            </div>
             <button
               type="submit"
               className="inline-flex items-center gap-1 rounded-xl bg-emerald-900 px-4 py-2 text-sm font-semibold text-white"

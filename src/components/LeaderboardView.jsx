@@ -13,6 +13,7 @@ const BOARDS = [
   { id: 'men', label: 'Men' },
   { id: 'women', label: 'Women' },
   { id: 'gerald', label: 'Gerald' },
+  { id: 'geraldine', label: 'Geraldine' },
 ];
 
 export function LeaderboardView({ config, teams, players, scores }) {
@@ -40,6 +41,7 @@ export function LeaderboardView({ config, teams, players, scores }) {
     if (board === 'men') filtered = players.filter((p) => p.gender === 'M');
     if (board === 'women') filtered = players.filter((p) => p.gender === 'F');
     if (board === 'gerald') filtered = players.filter((p) => p.inGerald);
+    if (board === 'geraldine') filtered = players.filter((p) => p.inGeraldine);
 
     const entries = filtered.map((player) => {
       const tee = KIRTLINGTON_COURSE.tees[player.teeId] || KIRTLINGTON_COURSE.tees.yellow;
@@ -57,7 +59,7 @@ export function LeaderboardView({ config, teams, players, scores }) {
   return (
     <div className="space-y-3">
       {/* Board switcher */}
-      <div className="grid grid-cols-5 gap-1 rounded-2xl bg-stone-200/80 p-1">
+      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-stone-200/80 p-1">
         {BOARDS.map((b) => (
           <button
             key={b.id}
@@ -83,6 +85,8 @@ export function LeaderboardView({ config, teams, players, scores }) {
             ? `Team Better Ball (best ${config.teamBestCount} per hole)`
             : board === 'gerald'
             ? 'Gerald Stableford (selected players)'
+            : board === 'geraldine'
+            ? 'Geraldine Stableford (selected women)'
             : `${BOARDS.find((b) => b.id === board)?.label} Individual Stableford`}
         </span>
         <span className="font-semibold text-emerald-900">
@@ -212,6 +216,11 @@ export function LeaderboardView({ config, teams, players, scores }) {
                           {entry.player.inGerald && board !== 'gerald' && (
                             <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-800">
                               G
+                            </span>
+                          )}
+                          {entry.player.inGeraldine && board !== 'geraldine' && (
+                            <span className="rounded-full bg-fuchsia-100 px-1.5 py-0.5 text-[10px] font-bold text-fuchsia-800">
+                              Gn
                             </span>
                           )}
                         </div>
