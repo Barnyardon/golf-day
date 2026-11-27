@@ -145,9 +145,9 @@ export const EVENT_PRESETS = {
       name: 'Sunday Foursome Test',
       date: '2026-11-29',
       courseId: 'kirtlington-18',
-      teamAllowancePct: 95,
+      teamAllowancePct: 85,
       individualAllowancePct: 95,
-      teamBestCount: 2,
+      teamBestCount: 1,
       organiserPin: '1234',
     },
     teams: [
