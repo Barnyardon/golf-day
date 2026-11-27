@@ -150,13 +150,16 @@ export function OrganiserView({
             />
           </label>
           <label className="block text-xs font-medium text-stone-600">
-            Team Best Scores / Hole
+            Team Best Scores / Hole (0 = none)
             <input
               type="number"
-              min={1}
+              min={0}
               max={4}
               value={config.teamBestCount}
-              onChange={(e) => onUpdateConfig({ teamBestCount: Number(e.target.value) || 2 })}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (Number.isFinite(v)) onUpdateConfig({ teamBestCount: v });
+              }}
               className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2 text-sm font-semibold text-stone-900"
             />
           </label>

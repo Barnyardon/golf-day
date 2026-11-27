@@ -17,22 +17,29 @@ const BOARDS = [
 ];
 
 export function LeaderboardView({ config, teams, players, scores }) {
+  const hasTeamComp = (config.teamBestCount ?? 2) > 0;
+
   const visibleBoards = useMemo(() => {
     const hasMen = players.some((p) => p.gender === 'M');
     const hasWomen = players.some((p) => p.gender === 'F');
     const hasGerald = players.some((p) => p.inGerald);
     const hasGeraldine = players.some((p) => p.inGeraldine);
     return BOARDS.filter((b) => {
+      if (b.id === 'team') return hasTeamComp;
       if (b.id === 'men') return hasMen && hasWomen;
       if (b.id === 'women') return hasWomen;
       if (b.id === 'gerald') return hasGerald;
       if (b.id === 'geraldine') return hasGeraldine;
       return true;
     });
-  }, [players]);
+  }, [players, hasTeamComp]);
 
-  const [board, setBoard] = useState('team');
+  const [board, setBoard] = useState(hasTeamComp ? 'team' : 'overall');
   const [expandedId, setExpandedId] = useState(null);
+
+  const activeBoard = visibleBoards.some((b) => b.id === board)
+    ? board
+    : visibleBoards[0]?.id || 'overall';
 
   const teamBoard = useMemo(() => {
     const entries = teams.map((team) => {
@@ -52,10 +59,10 @@ export function LeaderboardView({ config, teams, players, scores }) {
 
   const individualBoard = useMemo(() => {
     let filtered = players;
-    if (board === 'men') filtered = players.filter((p) => p.gender === 'M');
-    if (board === 'women') filtered = players.filter((p) => p.gender === 'F');
-    if (board === 'gerald') filtered = players.filter((p) => p.inGerald);
-    if (board === 'geraldine') filtered = players.filter((p) => p.inGeraldine);
+    if (activeBoard === 'men') filtered = players.filter((p) => p.gender === 'M');
+    if (activeBoard === 'women') filtered = players.filter((p) => p.gender === 'F');
+    if (activeBoard === 'gerald') filtered = players.filter((p) => p.inGerald);
+    if (activeBoard === 'geraldine') filtered = players.filter((p) => p.inGeraldine);
 
     const entries = filtered.map((player) => {
       const tee = KIRTLINGTON_COURSE.tees[player.teeId] || KIRTLINGTON_COURSE.tees.yellow;
@@ -68,58 +75,60 @@ export function LeaderboardView({ config, teams, players, scores }) {
       return { id: player.id, ...res };
     });
     return rankLeaderboard(entries);
-  }, [players, scores, board, config.individualAllowancePct]);
+  }, [players, scores, activeBoard, config.individualAllowancePct]);
 
   return (
     <div className="space-y-3">
-      {/* Board switcher */}
-      <div
-        className={`grid gap-1 rounded-2xl bg-stone-200/80 p-1 ${
-          visibleBoards.length <= 2
-            ? 'grid-cols-2'
-            : visibleBoards.length === 4
-            ? 'grid-cols-2'
-            : 'grid-cols-3'
-        }`}
-      >
-        {visibleBoards.map((b) => (
-          <button
-            key={b.id}
-            onClick={() => {
-              setBoard(b.id);
-              setExpandedId(null);
-            }}
-            className={`rounded-xl py-2 text-xs font-bold transition ${
-              board === b.id
-                ? 'bg-emerald-900 text-white shadow-sm'
-                : 'text-stone-700 hover:text-stone-900'
-            }`}
-          >
-            {b.label}
-          </button>
-        ))}
-      </div>
+      {/* Board switcher (hidden if only 1 board is active) */}
+      {visibleBoards.length > 1 && (
+        <div
+          className={`grid gap-1 rounded-2xl bg-stone-200/80 p-1 ${
+            visibleBoards.length <= 2
+              ? 'grid-cols-2'
+              : visibleBoards.length === 4
+              ? 'grid-cols-2'
+              : 'grid-cols-3'
+          }`}
+        >
+          {visibleBoards.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => {
+                setBoard(b.id);
+                setExpandedId(null);
+              }}
+              className={`rounded-xl py-2 text-xs font-bold transition ${
+                activeBoard === b.id
+                  ? 'bg-emerald-900 text-white shadow-sm'
+                  : 'text-stone-700 hover:text-stone-900'
+              }`}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Allowance note */}
       <div className="flex items-center justify-between rounded-xl bg-white px-3.5 py-2 text-xs text-stone-600 ring-1 ring-stone-200">
         <span className="font-medium">
-          {board === 'team'
+          {activeBoard === 'team'
             ? `Team Better Ball (best ${config.teamBestCount} per hole)`
-            : board === 'gerald'
+            : activeBoard === 'gerald'
             ? 'Gerald Stableford (selected players)'
-            : board === 'geraldine'
+            : activeBoard === 'geraldine'
             ? 'Geraldine Stableford (selected women)'
-            : `${BOARDS.find((b) => b.id === board)?.label} Individual Stableford`}
+            : `${BOARDS.find((b) => b.id === activeBoard)?.label} Individual Stableford`}
         </span>
         <span className="font-semibold text-emerald-900">
-          {board === 'team'
+          {activeBoard === 'team'
             ? `${config.teamAllowancePct}% CH`
             : `${config.individualAllowancePct}% CH`}
         </span>
       </div>
 
       {/* Team Leaderboard */}
-      {board === 'team' ? (
+      {activeBoard === 'team' ? (
         <div className="space-y-2">
           {teamBoard.map((entry) => {
             const isOpen = expandedId === entry.id;
@@ -235,12 +244,12 @@ export function LeaderboardView({ config, teams, players, scores }) {
                       <div>
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-stone-900">{entry.player.name}</span>
-                          {entry.player.inGerald && board !== 'gerald' && (
+                          {entry.player.inGerald && activeBoard !== 'gerald' && (
                             <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-800">
                               G
                             </span>
                           )}
-                          {entry.player.inGeraldine && board !== 'geraldine' && (
+                          {entry.player.inGeraldine && activeBoard !== 'geraldine' && (
                             <span className="rounded-full bg-fuchsia-100 px-1.5 py-0.5 text-[10px] font-bold text-fuchsia-800">
                               Gn
                             </span>
@@ -303,7 +312,10 @@ export function LeaderboardView({ config, teams, players, scores }) {
       )}
 
       <p className="px-1 text-center text-[11px] text-stone-500">
-        Ties broken by standard countback (Back 9, Back 6, Back 3, Hole 18). Team at {config.teamAllowancePct}% CH; Individual at {config.individualAllowancePct}% CH.
+        Ties broken by standard countback (Back 9, Back 6, Back 3, Hole 18).{' '}
+        {hasTeamComp
+          ? `Team at ${config.teamAllowancePct}% CH; Individual at ${config.individualAllowancePct}% CH.`
+          : `Individual Stableford at ${config.individualAllowancePct}% CH.`}
       </p>
     </div>
   );

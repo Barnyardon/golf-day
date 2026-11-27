@@ -25,6 +25,7 @@ export function ScorecardView({
   const [hole, setHole] = useState(1);
   const [showFullCard, setShowFullCard] = useState(false);
 
+  const hasTeamComp = (config.teamBestCount ?? 2) > 0;
   const activeTeam = teams.find((t) => t.id === activeTeamId) || null;
   const teamPlayers = activeTeam
     ? players.filter((p) => p.teamId === activeTeam.id)
@@ -34,9 +35,11 @@ export function ScorecardView({
     return (
       <div className="space-y-3">
         <div className="px-1">
-          <h2 className="text-lg font-bold text-stone-900">Pick your team</h2>
+          <h2 className="text-lg font-bold text-stone-900">
+            {hasTeamComp ? 'Pick your team' : 'Pick your group'}
+          </h2>
           <p className="mt-0.5 text-sm text-stone-600">
-            Tap your group to start scoring. Your phone will remember your team.
+            Tap your group to start scoring. Your phone will remember your selection.
           </p>
         </div>
 
@@ -49,7 +52,7 @@ export function ScorecardView({
               scores,
               KIRTLINGTON_COURSE.tees,
               config.teamAllowancePct,
-              config.teamBestCount
+              Math.max(1, config.teamBestCount || 2)
             );
             return (
               <button
@@ -64,7 +67,9 @@ export function ScorecardView({
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-emerald-900">{bb.totalPoints} pts</div>
+                  {hasTeamComp && (
+                    <div className="text-lg font-bold text-emerald-900">{bb.totalPoints} pts</div>
+                  )}
                   <div className="text-xs text-stone-500">
                     {bb.thru > 0 ? `Thru ${bb.thru}` : 'Not started'}
                   </div>
@@ -83,7 +88,7 @@ export function ScorecardView({
     scores,
     KIRTLINGTON_COURSE.tees,
     config.teamAllowancePct,
-    config.teamBestCount
+    Math.max(1, config.teamBestCount || 2)
   );
 
   const indRoundsById = {};
@@ -117,14 +122,25 @@ export function ScorecardView({
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-base font-extrabold text-emerald-900">
-              {teamResult.totalPoints} pts
+          {hasTeamComp ? (
+            <div className="text-right">
+              <div className="text-base font-extrabold text-emerald-900">
+                {teamResult.totalPoints} pts
+              </div>
+              <div className="text-[11px] text-stone-500">
+                Team ({teamResult.thru}/18)
+              </div>
             </div>
-            <div className="text-[11px] text-stone-500">
-              Team ({teamResult.thru}/18)
+          ) : (
+            <div className="text-right">
+              <div className="text-sm font-bold text-emerald-900">
+                Thru {teamResult.thru}/18
+              </div>
+              <div className="text-[11px] text-stone-500">
+                Stableford ({config.individualAllowancePct}%)
+              </div>
             </div>
-          </div>
+          )}
           <button
             onClick={() => setShowFullCard(true)}
             className="flex items-center gap-1 rounded-xl bg-stone-100 px-3 py-2 text-xs font-semibold text-stone-800 active:bg-stone-200"
@@ -199,14 +215,16 @@ export function ScorecardView({
       </div>
 
       {/* Team hole summary */}
-      <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-950 ring-1 ring-emerald-200">
-        <span>
-          Hole {hole} Team Better Ball (best {config.teamBestCount} at {config.teamAllowancePct}%)
-        </span>
-        <span className="text-sm font-extrabold">
-          {teamHole.entered ? `${teamHole.points} pts` : 'Waiting for scores'}
-        </span>
-      </div>
+      {hasTeamComp && (
+        <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-950 ring-1 ring-emerald-200">
+          <span>
+            Hole {hole} Team Better Ball (best {config.teamBestCount} at {config.teamAllowancePct}%)
+          </span>
+          <span className="text-sm font-extrabold">
+            {teamHole.entered ? `${teamHole.points} pts` : 'Waiting for scores'}
+          </span>
+        </div>
+      )}
 
       {/* Player score entry cards */}
       <div className="space-y-2.5">
@@ -214,16 +232,17 @@ export function ScorecardView({
           const tee = KIRTLINGTON_COURSE.tees[player.teeId] || KIRTLINGTON_COURSE.tees.yellow;
           const teamPlayerRound = teamResult.playerRounds.find((r) => r.player.id === player.id);
           const indRound = indRoundsById[player.id];
-          const teamHoleData = teamPlayerRound.holes[hole - 1];
+          const primaryRound = hasTeamComp ? teamPlayerRound : indRound;
+          const primaryHoleData = primaryRound.holes[hole - 1];
           const indHoleData = indRound.holes[hole - 1];
-          const isCounting = teamHole.countingPlayerIds.includes(player.id);
+          const isCounting = hasTeamComp && teamHole.countingPlayerIds.includes(player.id);
           const rawGross = (scores[player.id] || {})[hole];
           const entered = rawGross !== undefined && rawGross !== null;
           const isPickup = rawGross === 0;
 
           const dec = () => {
             if (!entered || isPickup) {
-              onSetScore(player.id, hole, teamHoleData.par);
+              onSetScore(player.id, hole, primaryHoleData.par);
             } else {
               onSetScore(player.id, hole, Math.max(1, rawGross - 1));
             }
@@ -231,7 +250,7 @@ export function ScorecardView({
 
           const inc = () => {
             if (!entered || isPickup) {
-              onSetScore(player.id, hole, teamHoleData.par);
+              onSetScore(player.id, hole, primaryHoleData.par);
             } else {
               onSetScore(player.id, hole, Math.min(15, rawGross + 1));
             }
@@ -284,12 +303,12 @@ export function ScorecardView({
                     )}
                   </div>
                   <div className="mt-1 text-xs text-stone-500">
-                    Par {teamHoleData.par} · SI {teamHoleData.si} · CH {teamPlayerRound.courseHandicap} ·{' '}
+                    Par {primaryHoleData.par} · SI {primaryHoleData.si} · CH {primaryRound.courseHandicap} (PH {primaryRound.playingHandicap}) ·{' '}
                     <span className="font-semibold text-stone-700">
-                      {teamHoleData.strokesReceived > 0
-                        ? `+${teamHoleData.strokesReceived} shot${teamHoleData.strokesReceived > 1 ? 's' : ''}`
-                        : teamHoleData.strokesReceived < 0
-                        ? `${teamHoleData.strokesReceived} shot`
+                      {primaryHoleData.strokesReceived > 0
+                        ? `+${primaryHoleData.strokesReceived} shot${primaryHoleData.strokesReceived > 1 ? 's' : ''}`
+                        : primaryHoleData.strokesReceived < 0
+                        ? `${primaryHoleData.strokesReceived} shot`
                         : '0 shots'}
                     </span>
                   </div>
@@ -298,15 +317,15 @@ export function ScorecardView({
                 {/* Live points preview */}
                 <div className="text-right">
                   <div className="text-sm font-extrabold text-emerald-900">
-                    {entered ? `${teamHoleData.points} pts` : '-'}
+                    {entered ? `${primaryHoleData.points} pts` : '-'}
                   </div>
-                  {entered && indHoleData.points !== teamHoleData.points && (
+                  {hasTeamComp && entered && indHoleData.points !== primaryHoleData.points && (
                     <div className="text-[11px] font-semibold text-stone-500">
                       Ind: {indHoleData.points} pts
                     </div>
                   )}
                   <div className="text-[11px] text-stone-400">
-                    Total Ind: {indRound.totalPoints}
+                    {hasTeamComp ? `Total Ind: ${indRound.totalPoints}` : `Total: ${indRound.totalPoints} pts`}
                   </div>
                 </div>
               </div>
@@ -323,7 +342,7 @@ export function ScorecardView({
 
                 <button
                   onClick={() => {
-                    if (!entered) onSetScore(player.id, hole, teamHoleData.par);
+                    if (!entered) onSetScore(player.id, hole, primaryHoleData.par);
                   }}
                   className={`flex h-12 flex-1 flex-col items-center justify-center rounded-xl border text-center ${
                     !entered
@@ -334,7 +353,7 @@ export function ScorecardView({
                   }`}
                 >
                   {!entered ? (
-                    <span className="text-xs font-semibold">Tap for Par ({teamHoleData.par})</span>
+                    <span className="text-xs font-semibold">Tap for Par ({primaryHoleData.par})</span>
                   ) : isPickup ? (
                     <span className="text-base font-extrabold">X (Pickup)</span>
                   ) : (
@@ -401,7 +420,9 @@ export function ScorecardView({
               <div>
                 <h3 className="text-base font-bold text-stone-900">{activeTeam.name} Scorecard</h3>
                 <p className="text-xs text-stone-500">
-                  Team total: {teamResult.totalPoints} pts (Out {teamResult.front9} / In {teamResult.back9})
+                  {hasTeamComp
+                    ? `Team total: ${teamResult.totalPoints} pts (Out ${teamResult.front9} / In ${teamResult.back9})`
+                    : `Individual Stableford at ${config.individualAllowancePct}% CH`}
                 </p>
               </div>
               <button
@@ -422,13 +443,18 @@ export function ScorecardView({
                         {p.name.split(' ')[0]}
                       </th>
                     ))}
-                    <th className="py-2 pl-2 text-right font-bold text-emerald-900">Team</th>
+                    {hasTeamComp && (
+                      <th className="py-2 pl-2 text-right font-bold text-emerald-900">Team</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
                   {Array.from({ length: 18 }, (_, i) => {
                     const hNum = i + 1;
                     const th = teamResult.holes[i];
+                    const roundsToShow = hasTeamComp
+                      ? teamResult.playerRounds
+                      : teamPlayers.map((p) => indRoundsById[p.id]);
                     return (
                       <tr
                         key={hNum}
@@ -439,9 +465,9 @@ export function ScorecardView({
                         className="cursor-pointer hover:bg-stone-50"
                       >
                         <td className="py-2 pr-2 font-bold text-stone-700">{hNum}</td>
-                        {teamResult.playerRounds.map((pr) => {
+                        {roundsToShow.map((pr) => {
                           const hd = pr.holes[i];
-                          const counts = th.countingPlayerIds.includes(pr.player.id);
+                          const counts = hasTeamComp && th.countingPlayerIds.includes(pr.player.id);
                           return (
                             <td
                               key={pr.player.id}
@@ -462,9 +488,11 @@ export function ScorecardView({
                             </td>
                           );
                         })}
-                        <td className="py-2 pl-2 text-right font-extrabold text-emerald-900">
-                          {th.entered ? th.points : '·'}
-                        </td>
+                        {hasTeamComp && (
+                          <td className="py-2 pl-2 text-right font-extrabold text-emerald-900">
+                            {th.entered ? th.points : '·'}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
