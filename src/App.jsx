@@ -67,7 +67,10 @@ export default function App() {
               {store.config.name}
             </h1>
             <p className="text-[11px] text-emerald-200">
-              Kirtlington 18-hole · Yellow (Par 70) / Red (Par 71)
+              Kirtlington 18-hole ·{' '}
+              {store.players.length > 0 && store.players.every((p) => p.teeId === 'medal')
+                ? 'White Tees (Par 70)'
+                : 'Yellow (Par 70) / Red (Par 71)'}
             </p>
           </div>
           {statusPill()}

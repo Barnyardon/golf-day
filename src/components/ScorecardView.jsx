@@ -139,8 +139,8 @@ export function ScorecardView({
     );
   }
 
-  const yellowHole = KIRTLINGTON_COURSE.tees.yellow.holes[hole - 1];
-  const redHole = KIRTLINGTON_COURSE.tees.red.holes[hole - 1];
+  const activeTeeIds = [...new Set(teamPlayers.map((p) => p.teeId || 'yellow'))];
+  const displayTeeIds = activeTeeIds.length ? activeTeeIds : ['yellow', 'red'];
   const teamHole = teamResult.holes[hole - 1];
 
   return (
@@ -207,14 +207,31 @@ export function ScorecardView({
               Hole {hole} of 18
             </div>
             <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-xs">
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-300/20 px-2.5 py-0.5 font-semibold text-amber-200">
-                <span className="h-2 w-2 rounded-full bg-amber-300" />
-                Yel: Par {yellowHole.par} · SI {yellowHole.si} · {yellowHole.yards}y
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-rose-300/20 px-2.5 py-0.5 font-semibold text-rose-100">
-                <span className="h-2 w-2 rounded-full bg-rose-400" />
-                Red: Par {redHole.par} · SI {redHole.si} · {redHole.yards}y
-              </span>
+              {displayTeeIds.map((tId) => {
+                const teeObj = KIRTLINGTON_COURSE.tees[tId] || KIRTLINGTON_COURSE.tees.yellow;
+                const hInfo = teeObj.holes[hole - 1];
+                const pillStyle =
+                  tId === 'red'
+                    ? 'bg-rose-300/20 text-rose-100'
+                    : tId === 'medal'
+                    ? 'bg-white/20 text-white'
+                    : 'bg-amber-300/20 text-amber-200';
+                const dotStyle =
+                  tId === 'red'
+                    ? 'bg-rose-400'
+                    : tId === 'medal'
+                    ? 'bg-white'
+                    : 'bg-amber-300';
+                return (
+                  <span
+                    key={tId}
+                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-semibold ${pillStyle}`}
+                  >
+                    <span className={`h-2 w-2 rounded-full ${dotStyle}`} />
+                    {teeObj.shortName}: Par {hInfo.par} · SI {hInfo.si} · {hInfo.yards}y
+                  </span>
+                );
+              })}
             </div>
           </div>
 

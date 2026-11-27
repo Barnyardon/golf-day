@@ -70,8 +70,8 @@ export const KIRTLINGTON_COURSE = {
     },
     medal: {
       id: 'medal',
-      name: 'Medal / White (Men)',
-      shortName: 'Medal',
+      name: 'White / Medal (Men)',
+      shortName: 'White',
       color: '#64748b',
       par: 70,
       courseRating: 69.4,
@@ -155,10 +155,10 @@ export const EVENT_PRESETS = {
       { id: 'sun-team-b', name: 'Team B', joinCode: '2002' },
     ],
     players: [
-      { id: 'sun-p-3', teamId: 'sun-team-a', name: 'Al', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.2, courseHandicap: null, inGerald: true, inGeraldine: false },
-      { id: 'sun-p-2', teamId: 'sun-team-a', name: 'Ian', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 29.0, courseHandicap: null, inGerald: true, inGeraldine: false },
-      { id: 'sun-p-4', teamId: 'sun-team-b', name: 'Butcher', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.0, courseHandicap: null, inGerald: false, inGeraldine: false },
-      { id: 'sun-p-1', teamId: 'sun-team-b', name: 'Matt', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 19.8, courseHandicap: null, inGerald: true, inGeraldine: false },
+      { id: 'sun-p-3', teamId: 'sun-team-a', name: 'Al', gender: 'M', teeId: 'medal', handicapMode: 'index', handicapIndex: 18.2, courseHandicap: null, inGerald: true, inGeraldine: false },
+      { id: 'sun-p-2', teamId: 'sun-team-a', name: 'Ian', gender: 'M', teeId: 'medal', handicapMode: 'index', handicapIndex: 29.0, courseHandicap: null, inGerald: true, inGeraldine: false },
+      { id: 'sun-p-4', teamId: 'sun-team-b', name: 'Butcher', gender: 'M', teeId: 'medal', handicapMode: 'index', handicapIndex: 18.0, courseHandicap: null, inGerald: false, inGeraldine: false },
+      { id: 'sun-p-1', teamId: 'sun-team-b', name: 'Matt', gender: 'M', teeId: 'medal', handicapMode: 'index', handicapIndex: 19.8, courseHandicap: null, inGerald: true, inGeraldine: false },
     ],
   },
 };
