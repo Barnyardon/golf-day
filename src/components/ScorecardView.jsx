@@ -218,7 +218,9 @@ export function ScorecardView({
       {hasTeamComp && (
         <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-950 ring-1 ring-emerald-200">
           <span>
-            Hole {hole} Team Better Ball (best {config.teamBestCount} at {config.teamAllowancePct}%)
+            {teamPlayers.length <= config.teamBestCount
+              ? `Hole ${hole} Team Stableford (combined at ${config.teamAllowancePct}%)`
+              : `Hole ${hole} Team Better Ball (best ${config.teamBestCount} at ${config.teamAllowancePct}%)`}
           </span>
           <span className="text-sm font-extrabold">
             {teamHole.entered ? `${teamHole.points} pts` : 'Waiting for scores'}

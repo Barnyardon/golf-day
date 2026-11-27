@@ -113,7 +113,9 @@ export function LeaderboardView({ config, teams, players, scores }) {
       <div className="flex items-center justify-between rounded-xl bg-white px-3.5 py-2 text-xs text-stone-600 ring-1 ring-stone-200">
         <span className="font-medium">
           {activeBoard === 'team'
-            ? `Team Better Ball (best ${config.teamBestCount} per hole)`
+            ? teamBoard.every((t) => t.playerRounds.length <= config.teamBestCount)
+              ? 'Team Combined Stableford (all scores count)'
+              : `Team Better Ball (best ${config.teamBestCount} per hole)`
             : activeBoard === 'gerald'
             ? 'Gerald Stableford (selected players)'
             : activeBoard === 'geraldine'
