@@ -26,17 +26,23 @@ export function ScorecardView({
   const [showFullCard, setShowFullCard] = useState(false);
 
   const hasTeamComp = (config.teamBestCount ?? 2) > 0;
-  const activeTeam = teams.find((t) => t.id === activeTeamId) || null;
-  const teamPlayers = activeTeam
+  const isAllGroup = activeTeamId === '__all__';
+  const activeTeam = isAllGroup
+    ? null
+    : teams.find((t) => t.id === activeTeamId) || null;
+  const canScoreAllTogether = players.length <= 4 && teams.length > 1;
+  const teamPlayers = isAllGroup
+    ? players
+    : activeTeam
     ? players.filter((p) => p.teamId === activeTeam.id)
     : [];
 
-  if (!activeTeam) {
+  if (!isAllGroup && !activeTeam) {
     return (
       <div className="space-y-3">
         <div className="px-1">
           <h2 className="text-lg font-bold text-stone-900">
-            {hasTeamComp ? 'Pick your team' : 'Pick your group'}
+            {canScoreAllTogether ? 'Start scoring' : hasTeamComp ? 'Pick your team' : 'Pick your group'}
           </h2>
           <p className="mt-0.5 text-sm text-stone-600">
             Tap your group to start scoring. Your phone will remember your selection.
@@ -44,6 +50,23 @@ export function ScorecardView({
         </div>
 
         <div className="space-y-2.5">
+          {canScoreAllTogether && (
+            <button
+              onClick={() => onSelectTeam('__all__')}
+              className="flex w-full items-center justify-between rounded-2xl bg-emerald-900 p-4 text-left text-white shadow-sm active:bg-emerald-950"
+            >
+              <div>
+                <div className="font-bold">Full Foursome (All {players.length})</div>
+                <p className="mt-1 text-xs text-emerald-100">
+                  {players.map((m) => m.name).join(', ')}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-xs font-semibold text-emerald-200">Recommended</div>
+              </div>
+            </button>
+          )}
+
           {teams.map((team) => {
             const members = players.filter((p) => p.teamId === team.id);
             const bb = calcTeamBetterBall(
@@ -82,14 +105,28 @@ export function ScorecardView({
     );
   }
 
-  const teamResult = calcTeamBetterBall(
-    activeTeam,
-    teamPlayers,
-    scores,
-    KIRTLINGTON_COURSE.tees,
-    config.teamAllowancePct,
-    Math.max(1, config.teamBestCount || 2)
-  );
+  const allTeamResults = teams.map((t) => {
+    const members = players.filter((p) => p.teamId === t.id);
+    return calcTeamBetterBall(
+      t,
+      members,
+      scores,
+      KIRTLINGTON_COURSE.tees,
+      config.teamAllowancePct,
+      Math.max(1, config.teamBestCount || 2)
+    );
+  });
+
+  const teamResult = isAllGroup
+    ? calcTeamBetterBall(
+        { id: '__all__', name: 'Full Foursome' },
+        teamPlayers,
+        scores,
+        KIRTLINGTON_COURSE.tees,
+        config.teamAllowancePct,
+        Math.max(1, config.teamBestCount || 2)
+      )
+    : allTeamResults.find((r) => r.team.id === activeTeam.id);
 
   const indRoundsById = {};
   for (const p of teamPlayers) {
@@ -116,13 +153,15 @@ export function ScorecardView({
         >
           <Users className="h-4 w-4 text-emerald-800" />
           <div>
-            <div className="text-sm font-bold text-stone-900">{activeTeam.name}</div>
+            <div className="text-sm font-bold text-stone-900">
+              {isAllGroup ? 'Full Foursome' : activeTeam.name}
+            </div>
             <div className="text-xs text-stone-500">Tap to switch group</div>
           </div>
         </button>
 
         <div className="flex items-center gap-3">
-          {hasTeamComp ? (
+          {hasTeamComp && !isAllGroup ? (
             <div className="text-right">
               <div className="text-base font-extrabold text-emerald-900">
                 {teamResult.totalPoints} pts
@@ -215,7 +254,27 @@ export function ScorecardView({
       </div>
 
       {/* Team hole summary */}
-      {hasTeamComp && (
+      {hasTeamComp && isAllGroup ? (
+        <div className="grid grid-cols-2 gap-2">
+          {allTeamResults.map((tr) => {
+            const hPts = tr.holes[hole - 1];
+            return (
+              <div
+                key={tr.team.id}
+                className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-950 ring-1 ring-emerald-200"
+              >
+                <span className="font-bold">{tr.team.name}</span>
+                <span>
+                  <strong className="text-sm">{tr.totalPoints}</strong>
+                  <span className="ml-1 text-[11px] text-emerald-800">
+                    ({hPts.entered ? `+${hPts.points}` : '-'})
+                  </span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : hasTeamComp ? (
         <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-950 ring-1 ring-emerald-200">
           <span>
             {teamPlayers.length <= config.teamBestCount
@@ -226,18 +285,26 @@ export function ScorecardView({
             {teamHole.entered ? `${teamHole.points} pts` : 'Waiting for scores'}
           </span>
         </div>
-      )}
+      ) : null}
 
       {/* Player score entry cards */}
       <div className="space-y-2.5">
         {teamPlayers.map((player) => {
           const tee = KIRTLINGTON_COURSE.tees[player.teeId] || KIRTLINGTON_COURSE.tees.yellow;
-          const teamPlayerRound = teamResult.playerRounds.find((r) => r.player.id === player.id);
+          const playerTeam = teams.find((t) => t.id === player.teamId);
+          const ownTeamResult = allTeamResults.find((r) => r.team.id === player.teamId);
+          const teamPlayerRound = (ownTeamResult || teamResult).playerRounds.find(
+            (r) => r.player.id === player.id
+          );
           const indRound = indRoundsById[player.id];
           const primaryRound = hasTeamComp ? teamPlayerRound : indRound;
           const primaryHoleData = primaryRound.holes[hole - 1];
           const indHoleData = indRound.holes[hole - 1];
-          const isCounting = hasTeamComp && teamHole.countingPlayerIds.includes(player.id);
+          const ownTeamHole = (ownTeamResult || teamResult).holes[hole - 1];
+          const isCounting =
+            hasTeamComp &&
+            !isAllGroup &&
+            ownTeamHole.countingPlayerIds.includes(player.id);
           const rawGross = (scores[player.id] || {})[hole];
           const entered = rawGross !== undefined && rawGross !== null;
           const isPickup = rawGross === 0;
@@ -277,6 +344,11 @@ export function ScorecardView({
                 <div>
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-base font-bold text-stone-900">{player.name}</span>
+                    {isAllGroup && playerTeam && (
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-900">
+                        {playerTeam.name}
+                      </span>
+                    )}
                     <span
                       className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
                         tee.id === 'red'
@@ -420,9 +492,11 @@ export function ScorecardView({
           <div className="max-h-[88vh] w-full max-w-2xl overflow-hidden rounded-t-3xl bg-white shadow-xl sm:rounded-3xl">
             <div className="flex items-center justify-between border-b border-stone-200 px-5 py-4">
               <div>
-                <h3 className="text-base font-bold text-stone-900">{activeTeam.name} Scorecard</h3>
+                <h3 className="text-base font-bold text-stone-900">
+                  {isAllGroup ? 'Full Foursome Scorecard' : `${activeTeam.name} Scorecard`}
+                </h3>
                 <p className="text-xs text-stone-500">
-                  {hasTeamComp
+                  {hasTeamComp && !isAllGroup
                     ? `Team total: ${teamResult.totalPoints} pts (Out ${teamResult.front9} / In ${teamResult.back9})`
                     : `Individual Stableford at ${config.individualAllowancePct}% CH`}
                 </p>
@@ -445,7 +519,7 @@ export function ScorecardView({
                         {p.name.split(' ')[0]}
                       </th>
                     ))}
-                    {hasTeamComp && (
+                    {hasTeamComp && !isAllGroup && (
                       <th className="py-2 pl-2 text-right font-bold text-emerald-900">Team</th>
                     )}
                   </tr>
@@ -454,9 +528,10 @@ export function ScorecardView({
                   {Array.from({ length: 18 }, (_, i) => {
                     const hNum = i + 1;
                     const th = teamResult.holes[i];
-                    const roundsToShow = hasTeamComp
-                      ? teamResult.playerRounds
-                      : teamPlayers.map((p) => indRoundsById[p.id]);
+                    const roundsToShow =
+                      hasTeamComp && !isAllGroup
+                        ? teamResult.playerRounds
+                        : teamPlayers.map((p) => indRoundsById[p.id]);
                     return (
                       <tr
                         key={hNum}
@@ -469,7 +544,10 @@ export function ScorecardView({
                         <td className="py-2 pr-2 font-bold text-stone-700">{hNum}</td>
                         {roundsToShow.map((pr) => {
                           const hd = pr.holes[i];
-                          const counts = hasTeamComp && th.countingPlayerIds.includes(pr.player.id);
+                          const counts =
+                            hasTeamComp &&
+                            !isAllGroup &&
+                            th.countingPlayerIds.includes(pr.player.id);
                           return (
                             <td
                               key={pr.player.id}
@@ -490,7 +568,7 @@ export function ScorecardView({
                             </td>
                           );
                         })}
-                        {hasTeamComp && (
+                        {hasTeamComp && !isAllGroup && (
                           <td className="py-2 pl-2 text-right font-extrabold text-emerald-900">
                             {th.entered ? th.points : '·'}
                           </td>
