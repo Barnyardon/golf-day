@@ -1,23 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  DEFAULT_EVENT_CONFIG,
-  DEFAULT_TEAMS,
-  DEFAULT_PLAYERS,
-} from '../data/kirtlington.js';
+import { getEventPreset } from '../data/kirtlington.js';
 import { supabase, isSupabaseConfigured } from './supabase.js';
 
-const STORAGE_KEY = 'golf_day_state_v3';
-const QUEUE_KEY = 'golf_day_pending_queue_v3';
+function storageKeyFor(eventId) {
+  return `golf_day_state_v3_${eventId}`;
+}
 
-function loadLocalState() {
+function queueKeyFor(eventId) {
+  return `golf_day_pending_queue_v3_${eventId}`;
+}
+
+function loadLocalState(eventId) {
+  const preset = getEventPreset(eventId);
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKeyFor(eventId));
     if (raw) {
       const parsed = JSON.parse(raw);
       return {
-        config: { ...DEFAULT_EVENT_CONFIG, ...(parsed.config || {}) },
-        teams: Array.isArray(parsed.teams) && parsed.teams.length ? parsed.teams : DEFAULT_TEAMS,
-        players: Array.isArray(parsed.players) && parsed.players.length ? parsed.players : DEFAULT_PLAYERS,
+        config: { ...preset.config, ...(parsed.config || {}), id: eventId },
+        teams: Array.isArray(parsed.teams) && parsed.teams.length ? parsed.teams : preset.teams,
+        players: Array.isArray(parsed.players) && parsed.players.length ? parsed.players : preset.players,
         scores: parsed.scores || {},
       };
     }
@@ -25,25 +27,25 @@ function loadLocalState() {
     // ignore corrupt localStorage
   }
   return {
-    config: DEFAULT_EVENT_CONFIG,
-    teams: DEFAULT_TEAMS,
-    players: DEFAULT_PLAYERS,
+    config: preset.config,
+    teams: preset.teams,
+    players: preset.players,
     scores: {},
   };
 }
 
-function loadQueue() {
+function loadQueue(eventId) {
   try {
-    const raw = localStorage.getItem(QUEUE_KEY);
+    const raw = localStorage.getItem(queueKeyFor(eventId));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export function useGolfDayStore() {
-  const [state, setState] = useState(loadLocalState);
-  const [pendingQueue, setPendingQueue] = useState(loadQueue);
+export function useGolfDayStore(eventId) {
+  const [state, setState] = useState(() => loadLocalState(eventId));
+  const [pendingQueue, setPendingQueue] = useState(() => loadQueue(eventId));
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
@@ -55,20 +57,20 @@ export function useGolfDayStore() {
   // Persist local state on every change
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(storageKeyFor(eventId), JSON.stringify(state));
     } catch {
       // ignore quota errors
     }
-  }, [state]);
+  }, [eventId, state]);
 
   // Persist pending queue
   useEffect(() => {
     try {
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(pendingQueue));
+      localStorage.setItem(queueKeyFor(eventId), JSON.stringify(pendingQueue));
     } catch {
       // ignore
     }
-  }, [pendingQueue]);
+  }, [eventId, pendingQueue]);
 
   // Track browser online/offline state
   useEffect(() => {
@@ -85,7 +87,7 @@ export function useGolfDayStore() {
   // Flush queued score mutations to Supabase
   const flushQueue = useCallback(async () => {
     if (!isSupabaseConfigured || !isOnline || flushingRef.current) return;
-    const queue = loadQueue();
+    const queue = loadQueue(eventId);
     if (queue.length === 0) {
       setSyncStatus('synced');
       return;
@@ -124,7 +126,7 @@ export function useGolfDayStore() {
     setPendingQueue(remaining);
     setSyncStatus(remaining.length === 0 ? 'synced' : 'offline');
     flushingRef.current = false;
-  }, [isOnline]);
+  }, [eventId, isOnline]);
 
   // Initial load + realtime subscription when Supabase is configured
   useEffect(() => {

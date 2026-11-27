@@ -132,3 +132,45 @@ export const DEFAULT_PLAYERS = [
   { id: 'p-9', teamId: 'team-3', name: 'Jo', gender: 'F', teeId: 'red', handicapMode: 'index', handicapIndex: 37.2, courseHandicap: null, inGerald: false, inGeraldine: true },
   { id: 'p-10', teamId: 'team-3', name: 'Adam', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 25.2, courseHandicap: null, inGerald: true, inGeraldine: false },
 ];
+
+export const EVENT_PRESETS = {
+  'kirtlington-golf-day-2026': {
+    config: DEFAULT_EVENT_CONFIG,
+    teams: DEFAULT_TEAMS,
+    players: DEFAULT_PLAYERS,
+  },
+  'sunday-test': {
+    config: {
+      id: 'sunday-test',
+      name: 'Sunday Foursome Test',
+      date: '2026-11-29',
+      courseId: 'kirtlington-18',
+      teamAllowancePct: 85,
+      individualAllowancePct: 95,
+      teamBestCount: 2,
+      organiserPin: '1234',
+    },
+    teams: [{ id: 'sun-team-1', name: 'Sunday Foursome', joinCode: '2001' }],
+    players: [
+      { id: 'sun-p-1', teamId: 'sun-team-1', name: 'Matt', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 19.8, courseHandicap: null, inGerald: true, inGeraldine: false },
+      { id: 'sun-p-2', teamId: 'sun-team-1', name: 'Ian', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 29.0, courseHandicap: null, inGerald: true, inGeraldine: false },
+      { id: 'sun-p-3', teamId: 'sun-team-1', name: 'Al', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.2, courseHandicap: null, inGerald: true, inGeraldine: false },
+      { id: 'sun-p-4', teamId: 'sun-team-1', name: 'Butcher', gender: 'M', teeId: 'yellow', handicapMode: 'index', handicapIndex: 18.0, courseHandicap: null, inGerald: true, inGeraldine: false },
+    ],
+  },
+};
+
+export function getActiveEventId() {
+  if (typeof window === 'undefined') return DEFAULT_EVENT_CONFIG.id;
+  const param = new URLSearchParams(window.location.search).get('event');
+  return param && param.trim() ? param.trim() : DEFAULT_EVENT_CONFIG.id;
+}
+
+export function getEventPreset(eventId) {
+  if (EVENT_PRESETS[eventId]) return EVENT_PRESETS[eventId];
+  return {
+    config: { ...DEFAULT_EVENT_CONFIG, id: eventId, name: eventId },
+    teams: [],
+    players: [],
+  };
+}

@@ -17,6 +17,20 @@ const BOARDS = [
 ];
 
 export function LeaderboardView({ config, teams, players, scores }) {
+  const visibleBoards = useMemo(() => {
+    const hasMen = players.some((p) => p.gender === 'M');
+    const hasWomen = players.some((p) => p.gender === 'F');
+    const hasGerald = players.some((p) => p.inGerald);
+    const hasGeraldine = players.some((p) => p.inGeraldine);
+    return BOARDS.filter((b) => {
+      if (b.id === 'men') return hasMen && hasWomen;
+      if (b.id === 'women') return hasWomen;
+      if (b.id === 'gerald') return hasGerald;
+      if (b.id === 'geraldine') return hasGeraldine;
+      return true;
+    });
+  }, [players]);
+
   const [board, setBoard] = useState('team');
   const [expandedId, setExpandedId] = useState(null);
 
@@ -59,8 +73,16 @@ export function LeaderboardView({ config, teams, players, scores }) {
   return (
     <div className="space-y-3">
       {/* Board switcher */}
-      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-stone-200/80 p-1">
-        {BOARDS.map((b) => (
+      <div
+        className={`grid gap-1 rounded-2xl bg-stone-200/80 p-1 ${
+          visibleBoards.length <= 2
+            ? 'grid-cols-2'
+            : visibleBoards.length === 4
+            ? 'grid-cols-2'
+            : 'grid-cols-3'
+        }`}
+      >
+        {visibleBoards.map((b) => (
           <button
             key={b.id}
             onClick={() => {

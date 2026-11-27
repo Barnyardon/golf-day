@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { ClipboardList, Trophy, Settings, Wifi, WifiOff, Cloud } from 'lucide-react';
+import { getActiveEventId } from './data/kirtlington.js';
 import { useGolfDayStore } from './lib/storage.js';
 import { ScorecardView } from './components/ScorecardView.jsx';
 import { LeaderboardView } from './components/LeaderboardView.jsx';
 import { OrganiserView } from './components/OrganiserView.jsx';
 
-const ACTIVE_TEAM_KEY = 'golf_day_active_team_v1';
-
 export default function App() {
-  const store = useGolfDayStore();
+  const eventId = getActiveEventId();
+  const activeTeamKey = `golf_day_active_team_v1_${eventId}`;
+  const store = useGolfDayStore(eventId);
   const [tab, setTab] = useState('scorecard');
   const [activeTeamId, setActiveTeamIdState] = useState(() => {
     try {
-      return localStorage.getItem(ACTIVE_TEAM_KEY) || null;
+      return localStorage.getItem(activeTeamKey) || null;
     } catch {
       return null;
     }
@@ -22,9 +23,9 @@ export default function App() {
     setActiveTeamIdState(teamId);
     try {
       if (teamId) {
-        localStorage.setItem(ACTIVE_TEAM_KEY, teamId);
+        localStorage.setItem(activeTeamKey, teamId);
       } else {
-        localStorage.removeItem(ACTIVE_TEAM_KEY);
+        localStorage.removeItem(activeTeamKey);
       }
     } catch {
       // ignore storage errors
